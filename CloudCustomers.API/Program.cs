@@ -1,4 +1,8 @@
+using CloudCustomers.API.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+
+ConfigureServices(builder.Services);
 
 // Add services to the container.
 
@@ -23,3 +27,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void ConfigureServices(IServiceCollection services)
+{
+    services.AddTransient<IUsersService, UsersService>();
+    services.AddHttpClient<IUsersService, UsersService>();
+}
