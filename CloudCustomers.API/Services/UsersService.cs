@@ -1,4 +1,7 @@
-﻿using CloudCustomers.API.Models;
+﻿using CloudCustomers.API.Config;
+using CloudCustomers.API.Models;
+using Microsoft.Extensions.Options;
+using System.Net;
 
 namespace CloudCustomers.API.Services
 {
@@ -9,12 +12,28 @@ namespace CloudCustomers.API.Services
 
     public class UsersService : IUsersService
     {
-        public UsersService()
-        { }
+        private readonly HttpClient _httpClient;
+        private readonly UsersApiOptions _apiConfig;
 
-        public Task<List<User>> GetAllUsers()
+        public UsersService(
+            HttpClient httpClient,
+            IOptions<UsersApiOptions> apiConfig
+        )
         {
-            throw new NotImplementedException();
+            _httpClient = httpClient;
+            _apiConfig = apiConfig.Value;
+        }
+
+        public async Task<List<User>> GetAllUsers()
+        {
+            var usersResponse = await _httpClient.GetAsync(_apiConfig.Endpoint);
+            if (usersResponse.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new List<User>();
+            }
+            var responseContent = usersResponse.Content;
+            var allUsers = await responseContent.ReadFromJsonAsync<List<User>>();
+            return allUsers!;
         }
     }
 }
